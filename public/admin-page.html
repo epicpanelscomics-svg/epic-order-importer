@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Epic Panels - Order Importer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    header {
+      margin-bottom: 30px;
+      border-bottom: 3px solid #ef215f;
+      padding-bottom: 20px;
+    }
+
+    h1 {
+      color: #121212;
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .section {
+      margin-bottom: 40px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 6px;
+      border-left: 4px solid #ef215f;
+    }
+
+    .section h2 {
+      color: #ef215f;
+      font-size: 18px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+    }
+
+    .section h2 span {
+      display: inline-block;
+      background: #ef215f;
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 24px;
+      margin-right: 10px;
+      font-size: 12px;
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      color: #333;
+      font-weight: 500;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    input[type="file"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 13px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    button {
+      background: #ef215f;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-right: 10px;
+    }
+
+    button:hover {
+      background: #d91654;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(239, 33, 95, 0.3);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    button.secondary {
+      background: #666;
+    }
+
+    button.secondary:hover {
+      background: #555;
+    }
+
+    .status {
+      padding: 12px;
+      border-radius: 4px;
+      margin-top: 15px;
+      font-size: 13px;
+      display: none;
+    }
+
+    .status.show {
+      display: block;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .status.loading {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
+    .status.info {
+      background: #d1e7f8;
+      color: #004085;
+      border: 1px solid #b8daff;
+    }
+
+    .loader {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #ef215f;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 13px;
+    }
+
+    .results-table th {
+      background: #ef215f;
+      color: white;
+      padding: 10px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .results-table td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .results-table tr:nth-child(even) {
+      background: #fafafa;
+    }
+
+    .warning {
+      color: #ff6600;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .step-desc {
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 15px;
+      line-height: 1.5;
+    }
+
+    .data-preview {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: monospace;
+    }
+
+    .file-info {
+      background: #e8f5e9;
+      padding: 10px;
+      border-radius: 4px;
+      color: #2e7d32;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎬 Epic Panels Order Importer</h1>
+      <p class="subtitle">Sync TikTok orders → Create in Shopify → Export shipment data</p>
+    </header>
+
+    <div class="section">
+      <h2><span>1</span>Upload TikTok Orders & Create in Shopify</h2>
+      <p class="step-desc">
+        Upload a CSV or Excel file with your TikTok order data. The app will create these orders
+        in your Shopify store. Required columns: customer_email, line_items (JSON array with variant_id, quantity).
+      </p>
+
+      <div class="input-group">
+        <label for="tiktok-file">📁 Select File (CSV or Excel)</label>
+        <input type="file" id="tiktok-file" accept=".csv,.xlsx,.xls" />
+        <div id="file-info" class="file-info" style="display: none;"></div>
+      </div>
+
+      <div class="input-group">
+        <label for="json-data">Or paste JSON data directly:</label>
+        <textarea id="json-data" placeholder='[{"customer_email": "test@example.com", "source_order_id": "12345", "line_items": [{"variant_id": "gid://shopify/ProductVariant/123", "quantity": 1}]}]'></textarea>
+      </div>
+
+      <div class="button-group">
+        <button onclick="uploadAndCreateOrders()">🚀 Create Orders in Shopify</button>
+        <button class="secondary" onclick="document.getElementById('tiktok-file').click()">Choose File</button>
+      </div>
+
+      <div id="status-1" class="status"></div>
+      <table id="created-orders-table" class="results-table" style="display: none;">
+        <thead>
+          <tr>
+            <th>Draft Order ID</th>
+            <th>Customer Email</th>
+            <th>TikTok Order ID</th>
+          </tr>
+        </thead>
+        <tbody id="created-orders-body"></tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2><span>2</span>Fetch Tracking Data & Export Template</h2>
+      <p class="step-desc">
+        After orders are created, this button will search for their source_order_id and tracking numbers,
+        then populate your Shopify Shipment Info template. The file will be ready to upload to TikTok.
+      </p>
+
+      <div class="input-group">
+        <label for="template-file">📊 Select Your Shipment Info Template (.xlsx)</label>
+        <input type="file" id="template-file" accept=".xlsx" />
+        <div id="template-info" class="file-info" style="display: none;"></div>
+      </div>
+
+      <div class="button-group">
+        <button onclick="fetchAndExportTemplate()">📥 Fetch Data & Export</button>
+        <button class="secondary" onclick="document.getElementById('template-file').click()">Choose Template</button>
+      </div>
+
+      <div id="status-2" class="status"></div>
+      <table id="fetched-orders-table" class="results-table" style="display: none;">
+        <thead>
+          <tr>
+            <th>Order Name</th>
+            <th>source_order_id</th>
+            <th>Tracking Number</th>
+            <th>Carrier</th>
+          </tr>
+        </thead>
+        <tbody id="fetched-orders-body"></tbody>
+      </table>
+    </div>
+
+    <div class="section" style="background: #f0f0f0; border-left-color: #999;">
+      <h2 style="color: #666;"><span style="background: #999;">🔍</span>Debug Info</h2>
+      <p class="step-desc">Orders waiting to be exported:</p>
+      <div id="debug-info" style="background: white; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; max-height: 150px; overflow-y: auto;">
+        No orders created yet
+      </div>
+      <button class="secondary" style="margin-top: 10px; background: #999;" onclick="clearStoredData()">Clear Stored Data</button>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'epic_panels_orders';
+
+    function getStoredOrders() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    }
+
+    function saveStoredOrders(orders) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
+      updateDebugInfo();
+    }
+
+    function updateDebugInfo() {
+      const orders = getStoredOrders();
+      const debugEl = document.getElementById('debug-info');
+      if (orders.length === 0) {
+        debugEl.textContent = 'No orders created yet';
+      } else {
+        debugEl.textContent = JSON.stringify(orders, null, 2);
+      }
+    }
+
+    function clearStoredData() {
+      if (confirm('Clear all stored order data?')) {
+        localStorage.removeItem(STORAGE_KEY);
+        updateDebugInfo();
+        showStatus('status-1', 'Data cleared', 'info');
+      }
+    }
+
+    function showStatus(statusId, message, type = 'info') {
+      const el = document.getElementById(statusId);
+      el.textContent = message;
+      el.className = `status show ${type}`;
+    }
+
+    function showStatusLoading(statusId, message) {
+      const el = document.getElementById(statusId);
+      el.innerHTML = `<span class="loader"></span>${message}`;
+      el.className = 'status show loading';
+    }
+
+    document.getElementById('tiktok-file').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const sizeKB = (file.size / 1024).toFixed(2);
+        document.getElementById('file-info').textContent = `✓ ${file.name} (${sizeKB} KB)`;
+        document.getElementById('file-info').style.display = 'block';
+      }
+    });
+
+    document.getElementById('template-file').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const sizeKB = (file.size / 1024).toFixed(2);
+        document.getElementById('template-info').textContent = `✓ ${file.name} (${sizeKB} KB)`;
+        document.getElementById('template-info').style.display = 'block';
+      }
+    });
+
+    async function uploadAndCreateOrders() {
+      showStatusLoading('status-1', 'Processing file and creating orders...');
+
+      try {
+        let orderData = null;
+        const fileInput = document.getElementById('tiktok-file');
+        const jsonInput = document.getElementById('json-data').value;
+
+        if (jsonInput.trim()) {
+          orderData = JSON.parse(jsonInput);
+        } else if (fileInput.files.length > 0) {
+          const file = fileInput.files[0];
+          const reader = new FileReader();
+
+          reader.onload = async (event) => {
+            const fileData = event.target.result;
+            const base64 = btoa(fileData);
+
+            try {
+              const parseResponse = await fetch('/api/parse-file', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fileData: base64 }),
+              });
+
+              const parseResult = await parseResponse.json();
+              if (!parseResponse.ok) throw new Error(parseResult.error);
+
+              await createOrdersFromParsedData(parseResult.data);
+            } catch (err) {
+              showStatus('status-1', `Error: ${err.message}`, 'error');
+            }
+          };
+
+          reader.readAsBinaryString(file);
+          return;
+        } else {
+          showStatus('status-1', 'Please upload a file or paste JSON data', 'error');
+          return;
+        }
+
+        if (orderData && Array.isArray(orderData)) {
+          await createOrdersFromParsedData(orderData);
+        }
+      } catch (error) {
+        showStatus('status-1', `Error: ${error.message}`, 'error');
+      }
+    }
+
+    async function createOrdersFromParsedData(data) {
+      try {
+        const response = await fetch('/api/create-orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orders: data }),
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error);
+
+        const orderIds = result.orders.map(o => ({
+          draftOrderId: o.draftOrderId,
+          sourceData: o.source_data,
+          email: o.email,
+        }));
+
+        saveStoredOrders(orderIds);
+
+        const tbody = document.getElementById('created-orders-body');
+        tbody.innerHTML = result.orders
+          .map(
+            order => `
+          <tr>
+            <td>${order.draftOrderId}</td>
+            <td>${order.email}</td>
+            <td>${order.source_data}</td>
+          </tr>
+        `
+          )
+          .join('');
+
+        document.getElementById('created-orders-table').style.display = 'table';
+        showStatus('status-1', `✓ Successfully created ${result.orders.length} orders!`, 'success');
+      } catch (error) {
+        showStatus('status-1', `Error: ${error.message}`, 'error');
+      }
+    }
+
+    async function fetchAndExportTemplate() {
+      const templateFile = document.getElementById('template-file');
+
+      if (!templateFile.files.length) {
+        showStatus('status-2', 'Please select your Shipment Info template', 'error');
+        return;
+      }
+
+      const storedOrders = getStoredOrders();
+      if (storedOrders.length === 0) {
+        showStatus('status-2', 'No orders created yet. Use Button 1 first', 'error');
+        return;
+      }
+
+      showStatusLoading('status-2', 'Fetching order data from Shopify...');
+
+      try {
+        const file = templateFile.files[0];
+        const reader = new FileReader();
+
+        reader.onload = async (event) => {
+          try {
+            const templateBase64 = btoa(event.target.result);
+            const orderIds = storedOrders.map(o => o.draftOrderId);
+
+            const fetchResponse = await fetch('/api/fetch-orders', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ order_ids: orderIds }),
+            });
+
+            const fetchResult = await fetchResponse.json();
+            if (!fetchResponse.ok) throw new Error(fetchResult.error);
+
+            const tbody = document.getElementById('fetched-orders-body');
+            tbody.innerHTML = fetchResult.orders
+              .map(
+                order => `
+              <tr>
+                <td>${order.orderName}</td>
+                <td>${order.sourceOrderId}</td>
+                <td>${order.trackingNumber}</td>
+                <td>${order.carrier}</td>
+              </tr>
+            `
+              )
+              .join('');
+
+            document.getElementById('fetched-orders-table').style.display = 'table';
+
+            showStatusLoading('status-2', 'Populating template and exporting...');
+
+            const exportResponse = await fetch('/api/export-template', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                templateFile: templateBase64,
+                orderData: fetchResult.orders,
+              }),
+            });
+
+            if (!exportResponse.ok) throw new Error('Export failed');
+
+            const blob = await exportResponse.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Shipment_Info_Exported.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            showStatus('status-2', `✓ Exported ${fetchResult.orders.length} orders!`, 'success');
+
+            setTimeout(() => {
+              localStorage.removeItem(STORAGE_KEY);
+              updateDebugInfo();
+            }, 1500);
+          } catch (error) {
+            showStatus('status-2', `Error: ${error.message}`, 'error');
+          }
+        };
+
+        reader.readAsBinaryString(file);
+      } catch (error) {
+        showStatus('status-2', `Error: ${error.message}`, 'error');
+      }
+    }
+
+    updateDebugInfo();
+  </script>
+</body>
+</html>
